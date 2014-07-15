@@ -1,12 +1,11 @@
 migrate_trac2redmine
 ====================
 
-This script is patch of the redmine migration script. You should overwrite to lib/tasks/migrate_from_trac.rake.
+This script is an updated version of the trac to redmine migration script. You should overwrite to lib/tasks/migrate_from_trac.rake.
 
-# Future
+Includes
 
- * This script support Trac 1.0.1.
- * support relation of wiki pages
- * some bug fixes
-   * time format is wrong
-   * can't get attachment files(old redmine migrate script doesn't support Trac 1.0.1)
+ * This script supports Trac 1.0.1.
+ * bugfixes
+   * fixed time format issues with redmine (see redmine#14567)
+   * attachments migration fixed (old redmine migrate script doesn't support Trac 1.0.1, looks for attachments in trac/attachments instead of trac/files/attachments)

@@ -580,9 +580,6 @@ namespace :redmine do
         # Wiki
         print "Migrating wiki"
 
-        # tracのwiki名 -> redmineのwikiのタイトルを保存するテーブル
-        # Redmineの内部でかってに変換するので，一時的にテーブルを作成する
-        trac_wiki_name = Hash::new
         if wiki.save
           TracWikiPage.order('name, version').all.each do |page|
             # Do not migrate Trac manual wiki pages
@@ -597,8 +594,6 @@ namespace :redmine do
             p.content.author = find_or_create_user(page.author) unless page.author.blank? || page.author == 'trac'
             p.content.comments = page.comment
             Time.fake(page.time) { p.new_record? ? p.save : p.content.save }
-
-            trac_wiki_name[p.title] = page.read_attribute(:name)
 
             next if p.content.new_record?
             migrated_wiki_edits += 1
@@ -624,26 +619,6 @@ namespace :redmine do
             Time.fake(page.content.updated_on) { page.content.save }
           end
 
-          # 親子関係の作成
-          wiki.pages.each do |page|
-            trac_title = trac_wiki_name[page.title]
-            trac_page = TracWikiPage.find_by_name(trac_title)
-
-            # 親の記事が必要な場合
-            if trac_page.parent_name != nil
-              # 親記事を検索する（なければ作成する）
-              parent_page = wiki.find_or_new_page(trac_page.parent_name)
-              page.parent_title = parent_page.title
-
-              if parent_page.new_record?
-                parent_page.content = WikiContent.new(:page => parent_page)
-                parent_page.content.text = "h1. " + parent_page.title
-                parent_page.content.author = find_or_create_user('trac')
-                Time.fake(page.updated_on) { parent_page.save }
-              end
-              Time.fake(page.updated_on) { page.save }
-            end
-          end
         end
         puts
 
